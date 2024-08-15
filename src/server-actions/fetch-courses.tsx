@@ -7,11 +7,13 @@ export async function fetchCourses(codes: Code[]) {
     return { sendNotif: false, codes: [] };
   }
 
-  const id = "12213423";
+  const id = process.env.ID_NUMBER;
   const courseCodes: number[] = [];
   let sendNotif = false;
 
   const courses = codes.reduce<string[]>((acc, curr) => {
+    if (curr.course.length !== 7) return acc;
+
     acc.push(curr.course);
     courseCodes.push(curr.code);
     return acc;

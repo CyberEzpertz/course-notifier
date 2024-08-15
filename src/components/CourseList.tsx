@@ -16,22 +16,15 @@ import {
 } from "./ui/card";
 import { Separator } from "./ui/separator";
 
-const sampleCodes = [
-  {
-    code: 3900,
-    course: "CSARCH2",
-  },
-  {
-    code: 1740,
-    course: "DIGIMAP",
-  },
-];
-
 const CourseList = () => {
-  const [codes, setCodes] = useState<Code[]>(sampleCodes);
+  const [codes, setCodes] = useState<Code[]>([]);
 
   const addClass = (courseCode: string, classCode: string) => {
     const code = Number(classCode);
+    const exists = codes.filter((existing) => existing.code === code);
+
+    if (exists.length === 0) return;
+
     const newCodes = [...codes, { code: code, course: courseCode }];
 
     setCodes(newCodes);
@@ -55,10 +48,11 @@ const CourseList = () => {
     }
   }, []);
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["fetch-codes", codes],
     queryFn: async () => await fetchCourses(codes),
-    // refetchInterval: 300000,
+    refetchInterval: 4 * 60000,
+    refetchIntervalInBackground: true,
   });
 
   useEffect(() => {
@@ -87,9 +81,15 @@ const CourseList = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {codes.map((code) => (
-            <WatchItem key={code.code} code={code} removeItem={removeClass} />
-          ))}
+          {codes.length !== 0 ? (
+            codes.map((code) => (
+              <WatchItem key={code.code} code={code} removeItem={removeClass} />
+            ))
+          ) : (
+            <span className="text-gray-500 italic">
+              No class codes added yet...
+            </span>
+          )}
         </CardContent>
       </Card>
     </div>
