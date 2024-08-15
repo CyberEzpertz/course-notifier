@@ -13,8 +13,8 @@ const sampleCodes = [
 ];
 
 export default async function Home() {
-  const data = await fetchCourses(sampleCodes);
-  console.log(data);
+  // const data = await fetchCourses(sampleCodes);
+  // console.log(data);
 
   return <CourseList />;
 }
