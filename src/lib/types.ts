@@ -1,4 +1,4 @@
-export type Code = {
+export type classEntry = {
   code: number;
   course: string;
   status?: "open" | "close";

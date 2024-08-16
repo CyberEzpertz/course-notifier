@@ -3,10 +3,10 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { X } from "lucide-react";
 import { Separator } from "./ui/separator";
-import { Code } from "@/lib/types";
+import { classEntry } from "@/lib/types";
 
 type Props = {
-  code: Code;
+  code: classEntry;
   removeItem: (classCode: number) => void;
 };
 

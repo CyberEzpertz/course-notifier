@@ -1,6 +1,6 @@
 "use client";
 
-import { Class, Code } from "@/lib/types";
+import { Class, classEntry } from "@/lib/types";
 import { fetchCourses } from "@/server-actions/fetch-courses";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -18,7 +18,7 @@ import {
 import { Separator } from "./ui/separator";
 
 const CourseList = () => {
-  const [codes, setCodes] = useState<Code[]>([]);
+  const [codes, setCodes] = useState<classEntry[]>([]);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const addClass = (courseCode: string, classCode: string) => {
@@ -59,7 +59,7 @@ const CourseList = () => {
       setLastUpdated(new Date());
       return await fetchCourses(codes);
     },
-    refetchInterval: 0.5 * 60000,
+    refetchInterval: 1 * 60000,
     refetchIntervalInBackground: true,
   });
 

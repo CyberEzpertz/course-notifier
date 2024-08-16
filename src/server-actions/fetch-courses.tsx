@@ -1,8 +1,8 @@
 "use server";
 
-import { Class, Code } from "@/lib/types";
+import { Class, classEntry } from "@/lib/types";
 
-export async function fetchCourses(codes: Code[]) {
+export async function fetchCourses(codes: classEntry[]) {
   if (codes.length === 0) {
     return { sendNotif: false, codes: [] };
   }
