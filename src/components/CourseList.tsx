@@ -11,6 +11,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "./ui/card";
@@ -18,14 +19,18 @@ import { Separator } from "./ui/separator";
 
 const CourseList = () => {
   const [codes, setCodes] = useState<Code[]>([]);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const addClass = (courseCode: string, classCode: string) => {
     const code = Number(classCode);
     const exists = codes.filter((existing) => existing.code === code);
 
-    if (exists.length === 0) return;
+    if (exists.length > 0) return;
 
-    const newCodes = [...codes, { code: code, course: courseCode }];
+    const newCodes = [
+      ...codes,
+      { code: code, course: courseCode.toUpperCase() },
+    ];
 
     setCodes(newCodes);
     localStorage.setItem("classCodes", JSON.stringify(newCodes));
@@ -50,8 +55,11 @@ const CourseList = () => {
 
   const { data } = useQuery({
     queryKey: ["fetch-codes", codes],
-    queryFn: async () => await fetchCourses(codes),
-    refetchInterval: 4 * 60000,
+    queryFn: async () => {
+      setLastUpdated(new Date());
+      return await fetchCourses(codes);
+    },
+    refetchInterval: 0.5 * 60000,
     refetchIntervalInBackground: true,
   });
 
@@ -91,6 +99,7 @@ const CourseList = () => {
             </span>
           )}
         </CardContent>
+        <CardFooter className="text-gray-500 text-sm">{`Last Updated: ${lastUpdated.toLocaleTimeString()}`}</CardFooter>
       </Card>
     </div>
   );

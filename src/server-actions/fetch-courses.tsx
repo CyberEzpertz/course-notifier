@@ -14,7 +14,8 @@ export async function fetchCourses(codes: Code[]) {
   const courses = codes.reduce<string[]>((acc, curr) => {
     if (curr.course.length !== 7) return acc;
 
-    acc.push(curr.course);
+    if (!acc.includes(curr.course)) acc.push(curr.course);
+
     courseCodes.push(curr.code);
     return acc;
   }, []);
@@ -35,15 +36,14 @@ export async function fetchCourses(codes: Code[]) {
       course.map((classDetails) => {
         if (courseCodes.includes(classDetails.code)) {
           const index = courseCodes.indexOf(classDetails.code);
+          const newStatus =
+            classDetails.enrolled >= classDetails.enrollCap ? "close" : "open";
 
           if (!sendNotif && codes[index].status) {
-            const newStatus =
-              classDetails.enrolled >= classDetails.enrollCap
-                ? "close"
-                : "open";
             sendNotif = codes[index].status !== newStatus;
           }
 
+          codes[index].status = newStatus;
           codes[index].details = classDetails;
         }
       });
