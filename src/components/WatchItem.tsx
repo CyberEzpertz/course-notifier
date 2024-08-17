@@ -18,9 +18,11 @@ const WatchItem = ({ code, removeItem }: Props) => {
           <Badge variant="default" className="font-bold w-20 justify-center">
             {`${code?.course}`}
           </Badge>
-          <Badge variant="outline" className="font-bold w-10 justify-center">
-            {`${code?.details?.section}`}
-          </Badge>
+          {code?.details && (
+            <Badge variant="outline" className="font-bold w-10 justify-center">
+              {`${code?.details?.section}`}
+            </Badge>
+          )}
           <span className="font-bold">{code?.code}</span>
           {code.details?.enrolled !== undefined &&
             code.details?.enrollCap !== undefined && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { classEntry } from "@/lib/types";
-import { fetchCourses } from "@/server-actions/fetch-courses";
+import { fetchCourses, tellServer } from "@/server-actions/fetch-courses";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import CourseInput from "./CourseInput";
@@ -57,25 +57,26 @@ const CourseList = () => {
   const { data } = useQuery({
     queryKey: ["fetch-codes", codes],
     queryFn: async () => {
+      const data = await fetchCourses(codes);
       setLastUpdated(new Date());
-      return await fetchCourses(codes);
+
+      return data;
     },
     refetchInterval: 1 * 60000,
     refetchIntervalInBackground: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
-    console.log(`USEEFFECT: ${data?.sendNotif}`);
     if (data !== undefined) {
       setCodes(data.codes);
 
       if (data.sendNotif) {
-        Notification.requestPermission().then((perm) => {
-          if (perm === "granted") {
-            new Notification("Course/s changed status.", {
-              body: "One of your watched courses either opened or close, check it out!",
-            });
-          }
+        tellServer(data.codes);
+
+        new Notification("Course/s changed status.", {
+          body: "One of your watched courses either opened or close, check it out!",
         });
       }
     }

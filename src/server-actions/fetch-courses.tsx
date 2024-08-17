@@ -60,3 +60,7 @@ export async function fetchCourses(codes: classEntry[]) {
     return { sendNotif: false, codes: codes };
   }
 }
+
+export async function tellServer(message: any) {
+  console.log(message);
+}
