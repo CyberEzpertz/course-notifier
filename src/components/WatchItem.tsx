@@ -13,10 +13,13 @@ type Props = {
 const WatchItem = ({ code, removeItem }: Props) => {
   return (
     <div>
-      <div className="flex flex-row justify-between items-center hover:bg-gray-900 transition-all p-2 gap-4">
+      <div className="flex flex-row justify-between items-center hover:bg-gray-900 transition-all p-2 gap-4 w-96">
         <div className="flex flex-row gap-2 w-full">
           <Badge variant="default" className="font-bold w-20 justify-center">
-            {`${code?.course}`}{" "}
+            {`${code?.course}`}
+          </Badge>
+          <Badge variant="outline" className="font-bold w-10 justify-center">
+            {`${code?.details?.section}`}
           </Badge>
           <span className="font-bold">{code?.code}</span>
           {code.details?.enrolled !== undefined &&
