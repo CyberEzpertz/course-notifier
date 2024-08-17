@@ -8,7 +8,14 @@ ID_NUMBER=[Your Full ID Number]
 
 ## Getting Started
 
-First, run the server with either of these commands:
+First, install the dependencies by running either one of these commands:
+```bash
+npm i --legacy-peer-deps
+# or
+pnpm i
+```
+
+Then run the server with either of these commands:
 
 ```bash
 npm run dev

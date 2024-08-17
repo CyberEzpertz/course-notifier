@@ -1,6 +1,6 @@
 "use client";
 
-import { Class, classEntry } from "@/lib/types";
+import { classEntry } from "@/lib/types";
 import { fetchCourses } from "@/server-actions/fetch-courses";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -15,7 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { Separator } from "./ui/separator";
 
 const CourseList = () => {
   const [codes, setCodes] = useState<classEntry[]>([]);
@@ -64,6 +63,7 @@ const CourseList = () => {
   });
 
   useEffect(() => {
+    console.log(`USEEFFECT: ${data?.sendNotif}`);
     if (data !== undefined) {
       setCodes(data.codes);
 
