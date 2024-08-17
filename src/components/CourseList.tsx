@@ -93,7 +93,6 @@ const CourseList = () => {
   useEffect(() => {
     if (data !== undefined) {
       const changelist = compareStatus(oldData.current, data);
-      console.log(changelist);
 
       if (changelist.length !== 0) {
         const body = changelist.reduce((acc, change) => {
