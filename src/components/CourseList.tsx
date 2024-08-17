@@ -18,7 +18,7 @@ import {
 
 const CourseList = () => {
   const [codes, setCodes] = useState<classEntry[]>([]);
-  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const addClass = (courseCode: string, classCode: string) => {
     const code = Number(classCode);
@@ -46,6 +46,9 @@ const CourseList = () => {
   useEffect(() => {
     const stored = localStorage.getItem("classCodes");
     const parsed = stored !== null ? JSON.parse(stored) : null;
+
+    Notification.requestPermission();
+    setLastUpdated(new Date());
 
     if (parsed) {
       setCodes(parsed);
@@ -99,7 +102,7 @@ const CourseList = () => {
             </span>
           )}
         </CardContent>
-        <CardFooter className="text-gray-500 text-sm">{`Last Updated: ${lastUpdated.toLocaleTimeString()}`}</CardFooter>
+        <CardFooter className="text-gray-500 text-sm">{`Last Updated: ${lastUpdated?.toLocaleTimeString()}`}</CardFooter>
       </Card>
     </div>
   );
