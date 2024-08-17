@@ -12,8 +12,8 @@ type Props = {
 
 const WatchItem = ({ code, removeItem }: Props) => {
   return (
-    <div>
-      <div className="flex flex-row justify-between items-center hover:bg-gray-900 transition-all p-2 gap-4 w-96">
+    <div className="h-max">
+      <div className="flex flex-row justify-between items-center hover:bg-gray-900 transition-all p-2 gap-4 w-[20.5rem]">
         <div className="flex flex-row gap-2 w-full">
           <Badge variant="default" className="font-bold w-20 justify-center">
             {`${code?.course}`}
