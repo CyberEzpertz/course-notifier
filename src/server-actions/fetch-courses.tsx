@@ -3,6 +3,7 @@
 import { Class, classEntry } from "@/lib/types";
 
 export async function fetchCourses(codes: classEntry[]) {
+  // Early exit if no code exists
   if (codes.length === 0) {
     return { sendNotif: false, codes: [] };
   }
@@ -29,7 +30,11 @@ export async function fetchCourses(codes: classEntry[]) {
         cache: "no-store",
       }
     );
-    //   const data = await fetch(`${process.env.COURSE_API}/api/getCookies`);
+
+    console.log(
+      `[FETCH COURSES] Fetching courses as of ${new Date().toLocaleTimeString()}`
+    );
+
     const decoded = (await data.json()) as Class[][];
 
     for (const course of decoded) {

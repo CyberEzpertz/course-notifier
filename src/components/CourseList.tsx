@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import CourseInput from "./CourseInput";
 import WatchItem from "./WatchItem";
-import addNotification, { Notifications } from "react-push-notification";
 import {
   Card,
   CardContent,
@@ -71,10 +70,12 @@ const CourseList = () => {
       setCodes(data.codes);
 
       if (data.sendNotif) {
-        addNotification({
-          title: "Class Status Updated",
-          message: "One or more of your watched classes' status got updated",
-          native: true,
+        Notification.requestPermission().then((perm) => {
+          if (perm === "granted") {
+            new Notification("Course/s changed status.", {
+              body: "One of your watched courses either opened or close, check it out!",
+            });
+          }
         });
       }
     }
@@ -82,7 +83,6 @@ const CourseList = () => {
 
   return (
     <div className="flex flex-row w-full min-h-full items-center justify-center gap-4">
-      <Notifications />
       <CourseInput addClass={addClass} />
       <Card>
         <CardHeader>
