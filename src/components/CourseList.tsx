@@ -45,7 +45,7 @@ const CourseList = () => {
   const watchList = useRef<watchEntry[]>([]);
   const oldData = useRef<classEntry[]>([]);
 
-  const { data, dataUpdatedAt, refetch } = useQuery({
+  const { data, dataUpdatedAt, refetch, error } = useQuery({
     queryKey: ["fetch-codes", watchList.current],
     queryFn: async () => fetchCourses(watchList.current),
     refetchInterval: (1 / 6) * 60000,
@@ -130,7 +130,7 @@ const CourseList = () => {
         </CardHeader>
         <CardContent className="overflow-y-auto flex flex-wrap max-w-[64.5rem]">
           {data?.length !== 0 ? (
-            data?.map((entry, i) => (
+            data?.map((entry) => (
               <WatchItem
                 key={entry.details?.code}
                 code={entry}
@@ -143,9 +143,14 @@ const CourseList = () => {
             </span>
           )}
         </CardContent>
-        <CardFooter className="text-gray-500 text-sm mt-auto">{`Last Updated: ${new Date(
-          dataUpdatedAt
-        ).toLocaleTimeString()}`}</CardFooter>
+        <CardFooter className="text-gray-500 text-sm mt-auto">
+          {`Last Updated: ${new Date(dataUpdatedAt).toLocaleTimeString()}`}
+          {error && (
+            <span className="text-gray-500 italic pl-4">
+              An error occurred, trying to fetch data again...
+            </span>
+          )}
+        </CardFooter>
       </Card>
     </div>
   );
