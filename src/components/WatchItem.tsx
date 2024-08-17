@@ -16,14 +16,14 @@ const WatchItem = ({ code, removeItem }: Props) => {
       <div className="flex flex-row justify-between items-center hover:bg-gray-900 transition-all p-2 gap-4 w-[20.5rem]">
         <div className="flex flex-row gap-2 w-full">
           <Badge variant="default" className="font-bold w-20 justify-center">
-            {`${code?.course}`}
+            {`${code?.details?.course}`}
           </Badge>
           {code?.details && (
             <Badge variant="outline" className="font-bold w-10 justify-center">
               {`${code?.details?.section}`}
             </Badge>
           )}
-          <span className="font-bold">{code?.code}</span>
+          <span className="font-bold">{code?.details?.code}</span>
           {code.details?.enrolled !== undefined &&
             code.details?.enrollCap !== undefined && (
               <Badge
@@ -40,8 +40,9 @@ const WatchItem = ({ code, removeItem }: Props) => {
         <Button
           variant="outline"
           className="w-8 h-8 text-xs"
-          onClick={() => {
-            removeItem(code.code);
+          onClick={(e) => {
+            removeItem(code.details?.code as number);
+            e.currentTarget.disabled = true;
           }}
         >
           X

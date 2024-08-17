@@ -1,8 +1,11 @@
 export type classEntry = {
-  code: number;
-  course: string;
   status?: "open" | "close";
   details?: Class;
+};
+
+export type watchEntry = {
+  code: number;
+  course: string;
 };
 
 export type Modality =

@@ -1,6 +1,6 @@
 "use client";
 
-import { classEntry } from "@/lib/types";
+import { classEntry, watchEntry } from "@/lib/types";
 import { fetchCourses, tellServer } from "@/server-actions/fetch-courses";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -15,14 +15,40 @@ import {
   CardTitle,
 } from "./ui/card";
 
-const CourseList = () => {
-  const notifiedRef = useRef<boolean>(false);
-  const [watched, setWatched] = useState<classEntry[]>([]);
+const compareStatus = (oldData: classEntry[], newData: classEntry[]) => {
+  const changelist = [];
 
-  const { data, dataUpdatedAt, isRefetching } = useQuery({
-    queryKey: ["fetch-codes", watched],
-    queryFn: async () => fetchCourses(watched),
-    refetchInterval: 1 * 60000,
+  for (const entry of newData) {
+    const classCode = entry.details?.code;
+    const pairedEntry = oldData.find(
+      (oldEntry) => oldEntry.details?.code === classCode
+    );
+
+    if (
+      !pairedEntry ||
+      !pairedEntry.status ||
+      pairedEntry.status === entry.status
+    )
+      continue;
+
+    changelist.push({
+      course: entry.details?.course,
+      section: entry.details?.section,
+      status: entry.status,
+    });
+  }
+
+  return changelist;
+};
+
+const CourseList = () => {
+  const watchList = useRef<watchEntry[]>([]);
+  const oldData = useRef<classEntry[]>([]);
+
+  const { data, dataUpdatedAt, refetch } = useQuery({
+    queryKey: ["fetch-codes", watchList.current],
+    queryFn: async () => fetchCourses(watchList.current),
+    refetchInterval: (1 / 6) * 60000,
     refetchIntervalInBackground: true,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -30,23 +56,27 @@ const CourseList = () => {
 
   const addClass = (courseCode: string, classCode: string) => {
     const code = Number(classCode);
-    const exists = watched.filter((existing) => existing.code === code);
+    const exists = watchList.current.filter(
+      (existing) => existing.code === code
+    );
 
     if (exists.length > 0 || courseCode.length !== 7) return;
 
-    const newCodes = [
-      ...watched,
+    watchList.current = [
+      ...watchList.current,
       { code: code, course: courseCode.toUpperCase() },
     ];
 
-    setWatched(newCodes);
-    localStorage.setItem("classCodes", JSON.stringify(newCodes));
+    localStorage.setItem("classCodes", JSON.stringify(watchList.current));
+    refetch();
   };
 
   const removeClass = (classCode: number) => {
-    const newCodes = watched.filter((code) => code.code !== classCode);
-    setWatched(newCodes);
-    localStorage.setItem("classCodes", JSON.stringify(newCodes));
+    watchList.current = watchList.current.filter(
+      (code) => code.code !== classCode
+    );
+    localStorage.setItem("classCodes", JSON.stringify(watchList.current));
+    refetch();
   };
 
   useEffect(() => {
@@ -56,30 +86,36 @@ const CourseList = () => {
     Notification.requestPermission();
 
     if (parsed) {
-      setWatched(parsed);
+      watchList.current = parsed;
     }
   }, []);
 
   useEffect(() => {
-    if (isRefetching) notifiedRef.current = false;
-  }, [isRefetching]);
-
-  useEffect(() => {
     if (data !== undefined) {
-      console.log(data.codes[0]?.status);
-      localStorage.setItem("classCodes", JSON.stringify(data.codes));
+      const changelist = compareStatus(oldData.current, data);
+      console.log(changelist);
 
-      if (!notifiedRef.current && data.sendNotif) {
-        notifiedRef.current = true;
-        tellServer("[USE EFFECT] SendNotif is True, sending Notification!");
-        console.log(data.timestamp?.getTime());
+      if (changelist.length !== 0) {
+        const body = changelist.reduce((acc, change) => {
+          acc += `[${change.course}] ${change.section} ${
+            change.status === "open" ? "🟢" : "🔴"
+          }\n`;
+          return acc;
+        }, "");
 
-        new Notification("Course/s changed status.", {
-          body: "One of your watched courses either opened or close, check it out!",
+        new Notification("Course status updated!", {
+          body: body,
         });
       }
 
-      setWatched(data.codes);
+      watchList.current = data.map((entry) => {
+        return {
+          code: entry.details?.code as number,
+          course: entry.details?.course as string,
+        };
+      });
+
+      oldData.current = data;
     }
   }, [data]);
 
@@ -94,9 +130,13 @@ const CourseList = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="overflow-y-auto flex flex-wrap max-w-[64.5rem]">
-          {watched.length !== 0 ? (
-            watched.map((code) => (
-              <WatchItem key={code.code} code={code} removeItem={removeClass} />
+          {data?.length !== 0 ? (
+            data?.map((entry, i) => (
+              <WatchItem
+                key={entry.details?.code}
+                code={entry}
+                removeItem={removeClass}
+              />
             ))
           ) : (
             <span className="text-gray-500 italic">

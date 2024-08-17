@@ -1,13 +1,12 @@
 "use server";
 
-import { Class, classEntry } from "@/lib/types";
+import { Class, classEntry, watchEntry } from "@/lib/types";
 
-export async function fetchCourses(codes: classEntry[]) {
+export async function fetchCourses(codes: watchEntry[]) {
   const id = process.env.ID_NUMBER;
-  let hasStatusChanged = false;
 
   if (codes.length === 0) {
-    return { sendNotif: false, codes: [] };
+    return [];
   }
 
   const { uniqueCourses, classCodes } = codes.reduce<{
@@ -45,38 +44,29 @@ export async function fetchCourses(codes: classEntry[]) {
     // });
 
     if (!data.ok) {
-      console.error(
-        "[FETCH COURSES] Tried fetching, but API is not yet ready."
-      );
-      return { sendNotif: false, codes: [] };
+      throw new Error("Tried fetching, but Course API is not yet ready.");
     }
 
     const parsed = (await data.json()) as Class[][];
+    const finalData: classEntry[] = [];
 
     for (const course of parsed) {
       course.map((courseClass) => {
         if (classCodes.includes(courseClass.code)) {
-          const index = classCodes.indexOf(courseClass.code);
           const newStatus =
             courseClass.enrolled >= courseClass.enrollCap ? "close" : "open";
-
-          // If we're not yet sending notifs + the class doesn't have a status yet
-          // reassign the hasStatusChanged depending on the result.
-          if (!hasStatusChanged && codes[index].status) {
-            hasStatusChanged = codes[index].status !== newStatus;
-          }
-
-          codes[index].status = newStatus;
-          codes[index].details = courseClass;
+          finalData.push({
+            details: courseClass,
+            status: newStatus,
+          });
         }
       });
     }
 
-    return { sendNotif: hasStatusChanged, codes: codes, timestamp: new Date() };
+    return finalData;
   } catch (error) {
     console.error("[FETCH COURSES] Something went wrong during fetching:");
-    console.error(error);
-    return { sendNotif: false, codes: codes };
+    throw error;
   }
 }
 
