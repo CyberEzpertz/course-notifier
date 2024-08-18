@@ -3,37 +3,39 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { X } from "lucide-react";
 import { Separator } from "./ui/separator";
-import { classEntry } from "@/lib/types";
+import { classEntry, watchEntry } from "@/lib/types";
 
 type Props = {
-  code: classEntry;
+  watch: watchEntry;
+  details?: classEntry;
   removeItem: (classCode: number) => void;
 };
 
-const WatchItem = ({ code, removeItem }: Props) => {
+const WatchItem = ({ watch, details, removeItem }: Props) => {
   return (
     <div className="h-max">
       <div className="flex flex-row justify-between items-center hover:bg-gray-900 transition-all p-2 gap-4 w-[20.5rem]">
         <div className="flex flex-row gap-2 w-full">
           <Badge variant="default" className="font-bold w-20 justify-center">
-            {`${code?.details?.course}`}
+            {`${watch.course}`}
           </Badge>
-          {code?.details && (
+          {details && (
             <Badge variant="outline" className="font-bold w-10 justify-center">
-              {`${code?.details?.section}`}
+              {`${details.details?.section}`}
             </Badge>
           )}
-          <span className="font-bold">{code?.details?.code}</span>
-          {code.details?.enrolled !== undefined &&
-            code.details?.enrollCap !== undefined && (
+          <span className="font-bold">{watch.code}</span>
+          {details &&
+            details.details?.enrolled !== undefined &&
+            details.details?.enrollCap !== undefined && (
               <Badge
                 className={`${
-                  code.status === "open"
+                  details.status === "open"
                     ? "dark:bg-emerald-500"
                     : "dark:bg-rose-500"
                 } ml-auto`}
               >
-                {code.details.enrolled}/{code.details.enrollCap}
+                {details.details.enrolled}/{details.details.enrollCap}
               </Badge>
             )}
         </div>
@@ -41,7 +43,7 @@ const WatchItem = ({ code, removeItem }: Props) => {
           variant="outline"
           className="w-8 h-8 text-xs"
           onClick={(e) => {
-            removeItem(code.details?.code as number);
+            removeItem(watch.code as number);
             e.currentTarget.disabled = true;
           }}
         >

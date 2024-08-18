@@ -14,6 +14,9 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
 
 const compareStatus = (oldData: classEntry[], newData: classEntry[]) => {
   const changelist = [];
@@ -42,13 +45,14 @@ const compareStatus = (oldData: classEntry[], newData: classEntry[]) => {
 };
 
 const CourseList = () => {
-  const watchList = useRef<watchEntry[]>([]);
+  const [id, setId] = useState<string>("");
+  const [watched, setWatched] = useState<watchEntry[]>([]);
   const oldData = useRef<classEntry[]>([]);
 
-  const { data, dataUpdatedAt, refetch, error } = useQuery({
-    queryKey: ["fetch-codes", watchList.current],
-    queryFn: async () => fetchCourses(watchList.current),
-    refetchInterval: 1 * 60000,
+  const { data, dataUpdatedAt, refetch, error, isFetching } = useQuery({
+    queryKey: ["fetch-codes", watched, id],
+    queryFn: async () => fetchCourses(watched, id),
+    refetchInterval: (1 / 6) * 60000,
     refetchIntervalInBackground: true,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -56,37 +60,48 @@ const CourseList = () => {
 
   const addClass = (courseCode: string, classCode: string) => {
     const code = Number(classCode);
-    const exists = watchList.current.filter(
-      (existing) => existing.code === code
-    );
+    const exists = watched.filter((existing) => existing.code === code);
 
     if (exists.length > 0 || courseCode.length !== 7) return;
 
-    watchList.current = [
-      ...watchList.current,
+    const newWatched = [
+      ...watched,
       { code: code, course: courseCode.toUpperCase() },
-    ];
+    ].toSorted((a, b) => a.course.localeCompare(b.course));
 
-    localStorage.setItem("classCodes", JSON.stringify(watchList.current));
-    refetch();
+    setWatched(newWatched);
+
+    localStorage.setItem("classCodes", JSON.stringify(newWatched));
   };
 
   const removeClass = (classCode: number) => {
-    watchList.current = watchList.current.filter(
-      (code) => code.code !== classCode
-    );
-    localStorage.setItem("classCodes", JSON.stringify(watchList.current));
-    refetch();
+    const newWatched = watched.filter((code) => code.code !== classCode);
+    localStorage.setItem("classCodes", JSON.stringify(newWatched));
+
+    setWatched(newWatched);
+  };
+
+  const handleId = (formData: FormData) => {
+    const idNumber = formData.get("idNumber") as string;
+    localStorage.setItem("idNumber", JSON.stringify(idNumber));
+    setId(idNumber);
   };
 
   useEffect(() => {
     const stored = localStorage.getItem("classCodes");
+    const storedId = localStorage.getItem("idNumber");
+
     const parsed = stored !== null ? JSON.parse(stored) : null;
+    const parsedId = storedId !== null ? JSON.parse(storedId) : null;
 
     Notification.requestPermission();
 
     if (parsed) {
-      watchList.current = parsed;
+      setWatched(parsed);
+    }
+
+    if (parsedId) {
+      setId(parsedId);
     }
   }, []);
 
@@ -107,13 +122,6 @@ const CourseList = () => {
         });
       }
 
-      watchList.current = data.map((entry) => {
-        return {
-          code: entry.details?.code as number,
-          course: entry.details?.course as string,
-        };
-      });
-
       oldData.current = data;
     }
   }, [data]);
@@ -122,21 +130,46 @@ const CourseList = () => {
     <div className="flex flex-col w-max min-h-full items-center justify-center gap-4">
       <CourseInput addClass={addClass} />
       <Card className="flex flex-col w-full h-1/2">
-        <CardHeader>
-          <CardTitle>Watchlist</CardTitle>
-          <CardDescription>
-            {"Classes that you're currently watching are here"}
-          </CardDescription>
+        <CardHeader className="flex-row flex space-y-0 justify-between">
+          <div>
+            <CardTitle>Watchlist</CardTitle>
+            <CardDescription>
+              {"Classes that you're currently watching are here"}
+            </CardDescription>
+          </div>
+          <form action={handleId}>
+            <div className="flex flex-row gap-4 items-center">
+              <Label htmlFor="idNumber" className="text-nowrap">
+                ID Number
+              </Label>
+              <Input
+                id="idNumber"
+                name="idNumber"
+                type="text"
+                placeholder="12312345"
+              />
+              <Button type="submit" className="gap-2">
+                {id.length === 0 ? "Set ID" : "Change ID"}
+              </Button>
+            </div>
+          </form>
         </CardHeader>
         <CardContent className="overflow-y-auto flex flex-wrap max-w-[64.5rem]">
-          {data?.length !== 0 ? (
-            data?.map((entry) => (
-              <WatchItem
-                key={entry.details?.code}
-                code={entry}
-                removeItem={removeClass}
-              />
-            ))
+          {watched?.length !== 0 ? (
+            watched?.map((entry) => {
+              const entryDetail = data?.find(
+                (dataEntry) => dataEntry.details?.code === entry.code
+              );
+
+              return (
+                <WatchItem
+                  key={entry.code}
+                  watch={entry}
+                  details={entryDetail}
+                  removeItem={removeClass}
+                />
+              );
+            })
           ) : (
             <span className="text-gray-500 italic">
               No class codes added yet...
@@ -150,6 +183,9 @@ const CourseList = () => {
               An error occurred, trying to fetch data again...
             </span>
           )}
+          <span className="ml-auto">
+            ID Number: {id.length === 0 ? "None" : id}
+          </span>
         </CardFooter>
       </Card>
     </div>

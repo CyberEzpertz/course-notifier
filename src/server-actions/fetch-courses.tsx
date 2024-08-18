@@ -2,9 +2,7 @@
 
 import { Class, classEntry, watchEntry } from "@/lib/types";
 
-export async function fetchCourses(codes: watchEntry[]) {
-  const id = process.env.ID_NUMBER;
-
+export async function fetchCourses(codes: watchEntry[], id: string) {
   if (codes.length === 0) {
     return [];
   }
