@@ -48,7 +48,7 @@ const CourseList = () => {
   const { data, dataUpdatedAt, refetch, error } = useQuery({
     queryKey: ["fetch-codes", watchList.current],
     queryFn: async () => fetchCourses(watchList.current),
-    refetchInterval: (1 / 6) * 60000,
+    refetchInterval: 1 * 60000,
     refetchIntervalInBackground: true,
     refetchOnMount: false,
     refetchOnWindowFocus: false,

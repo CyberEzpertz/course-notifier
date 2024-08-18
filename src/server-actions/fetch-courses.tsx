@@ -9,7 +9,7 @@ export async function fetchCourses(codes: watchEntry[]) {
     return [];
   }
 
-  const { uniqueCourses, classCodes } = codes.reduce<{
+  let { uniqueCourses, classCodes } = codes.reduce<{
     uniqueCourses: string[];
     classCodes: number[];
   }>(
@@ -59,7 +59,27 @@ export async function fetchCourses(codes: watchEntry[]) {
             details: courseClass,
             status: newStatus,
           });
+
+          classCodes = classCodes.filter(
+            (classCode) => classCode !== courseClass.code
+          );
         }
+      });
+    }
+
+    for (const invalidCourse of classCodes) {
+      finalData.push({
+        details: {
+          code: invalidCourse,
+          course: "INVALID",
+          enrollCap: 0,
+          enrolled: 0,
+          modality: "ONLINE",
+          restriction: "",
+          room: "",
+          schedules: [],
+          section: "",
+        },
       });
     }
 
