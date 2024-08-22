@@ -21,17 +21,15 @@ export async function fetchCourses(codes: watchEntry[], id: string) {
     { uniqueCourses: [], classCodes: [] }
   );
 
-  try {
-    console.log(
-      `[FETCH COURSES] Fetching courses as of ${new Date().toLocaleTimeString()}`
-    );
+  console.log(
+    `[FETCH COURSES] Fetching courses for codes: ${uniqueCourses}\n${classCodes}`
+  );
 
+  try {
     const data = await fetch(
       `${
         process.env.COURSE_API
-      }/api/getMultipleCourses?id=${id}&courses=${uniqueCourses.join(
-        "&courses="
-      )}`,
+      }/api/courses?id=${id}&courses=${uniqueCourses.join("&courses=")}`,
       {
         cache: "no-store",
       }
